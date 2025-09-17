@@ -93,6 +93,31 @@
         </div>
     </div>
 
+    <!-- Order Confirmation Modal -->
+    <div id="order-confirmation-modal" class="modal">
+        <div class="modal-content order-confirmation">
+            <div class="confirmation-header">
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h2>Order Placed Successfully!</h2>
+                <p class="confirmation-message">Thank you for your purchase. Your order has been received and is being processed.</p>
+            </div>
+            
+            <div class="order-details">
+                <h3>Order Summary</h3>
+                <div id="confirmation-items" class="confirmation-items"></div>
+                <div class="confirmation-total">
+                    <strong>Total Amount: ₹<span id="confirmation-total">0.00</span></strong>
+                </div>
+            </div>
+            
+            <div class="confirmation-actions">
+                <button id="continue-shopping" class="btn btn-primary">Continue Shopping</button>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>

@@ -19,14 +19,18 @@ const cartItems = document.getElementById('cart-items');
 const cartTotal = document.getElementById('cart-total');
 const cartModal = document.getElementById('cart-modal');
 const checkoutModal = document.getElementById('checkout-modal');
+const orderConfirmationModal = document.getElementById('order-confirmation-modal');
 const closeButton = document.querySelector('.close');
 const checkoutCloseButton = document.getElementById('checkout-close');
 const navCart = document.querySelector('.nav-cart');
 const checkoutBtn = document.getElementById('checkout-btn');
 const backToCartBtn = document.getElementById('back-to-cart');
+const continueShoppingBtn = document.getElementById('continue-shopping');
 const checkoutForm = document.getElementById('checkout-form');
 const checkoutItems = document.getElementById('checkout-items');
 const checkoutTotal = document.getElementById('checkout-total');
+const confirmationItems = document.getElementById('confirmation-items');
+const confirmationTotal = document.getElementById('confirmation-total');
 
 // Fetch and display products
 async function fetchAndDisplayProducts() {
@@ -194,6 +198,29 @@ function backToCart() {
     cartModal.style.display = 'block';
 }
 
+// Order confirmation functions
+function showOrderConfirmation(orderData, orderResult) {
+    // Populate confirmation items
+    confirmationItems.innerHTML = cart.map(item => `
+        <div class="confirmation-item">
+            <span>${item.productName} (x${item.quantity})</span>
+            <span>₹${(item.unitPrice * item.quantity).toLocaleString('en-IN')}</span>
+        </div>
+    `).join('');
+    
+    // Set total
+    const total = cart.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
+    confirmationTotal.textContent = total.toLocaleString('en-IN');
+    
+    // Close checkout modal and show confirmation
+    checkoutModal.style.display = 'none';
+    orderConfirmationModal.style.display = 'block';
+}
+
+function closeOrderConfirmation() {
+    orderConfirmationModal.style.display = 'none';
+}
+
 // Submit order - DIRECT APIM CALL ONLY
 async function submitOrder(orderData) {
     try {
@@ -281,20 +308,12 @@ function handleCheckoutSubmit(event) {
         .then(result => {
             console.log('Order successful:', result);
             
-            // Create a more informative success message
-            let successMessage = 'Order placed successfully!';
-            if (result.orderId) {
-                successMessage += `\nOrder ID: ${result.orderId}`;
-            }
-            if (result.message && result.message.length > 0) {
-                successMessage += `\nStatus: ${result.message}`;
-            }
+            // Show order confirmation modal instead of alert
+            showOrderConfirmation(orderData, result);
             
-            alert(successMessage);
-            
+            // Clear cart and reset form
             cart = [];
             renderCart();
-            closeCheckoutModal();
             checkoutForm.reset();
         })
         .catch(error => {
@@ -346,6 +365,7 @@ closeButton.addEventListener('click', () => {
 checkoutBtn.addEventListener('click', openCheckoutModal);
 checkoutCloseButton.addEventListener('click', closeCheckoutModal);
 backToCartBtn.addEventListener('click', backToCart);
+continueShoppingBtn.addEventListener('click', closeOrderConfirmation);
 checkoutForm.addEventListener('submit', handleCheckoutSubmit);
 
 window.addEventListener('click', (event) => {
@@ -354,6 +374,9 @@ window.addEventListener('click', (event) => {
     }
     if (event.target == checkoutModal) {
         checkoutModal.style.display = 'none';
+    }
+    if (event.target == orderConfirmationModal) {
+        orderConfirmationModal.style.display = 'none';
     }
 });
 
