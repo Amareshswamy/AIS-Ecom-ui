@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShopMart</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">ShopMart</div>
+        <div class="nav-cart">
+            <i class="fas fa-shopping-cart"></i>
+            <span id="cart-count">0</span>Access to fetch at 'https://api.allorigins.win/raw?url=https%3A%2F%2Fapim-ecommerce.azure-api.net%2FWhen_an_HTTP_request_is_received%2Fpaths%2Finvoke' from origin 'http://127.0.0.1:5500' has been blocked by CORS policy: Request header field ocp-apim-subscription-key is not allowed by Access-Control-Allow-Headers in preflight respons
+        </div>
+    </nav>
+
+    <div class="container">
+        <section id="products-section">
+            <div class="section-header">
+                <h2>Our Collection</h2>
+                <div class="cart-preview">
+                    <div class="cart-info">
+                        <span class="cart-count-display">Cart: <span id="cart-count-inline">0</span> items</span>
+                        <button id="view-cart-btn" class="btn btn-secondary">View Cart</button>
+                    </div>
+                </div>
+            </div>
+            <div id="products-grid" class="products-grid">
+                <div class="loader"></div>
+            </div>
+        </section>
+
+        <div id="cart-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Your Cart</h2>
+                    <span class="close">&times;</span>
+                </div>
+                <div id="cart-items" class="cart-items"></div>
+                <div class="cart-summary">
+                    <div class="total">Total: ₹<span id="cart-total">0.00</span></div>
+                    <button id="checkout-btn" class="btn btn-primary">Proceed to Checkout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Checkout Modal -->
+    <div id="checkout-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Checkout</h2>
+                <span class="close" id="checkout-close">&times;</span>
+            </div>
+            <form id="checkout-form">
+                <div class="checkout-section">
+                    <h3>Shipping Address</h3>
+                    <div class="form-group">
+                        <label for="street">Street Address:</label>
+                        <input type="text" id="street" name="street" required placeholder="123, MG Road">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="city">City:</label>
+                            <input type="text" id="city" name="city" required placeholder="Bengaluru">
+                        </div>
+                        <div class="form-group">
+                            <label for="state">State:</label>
+                            <input type="text" id="state" name="state" required placeholder="Karnataka">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="zipCode">ZIP Code:</label>
+                        <input type="text" id="zipCode" name="zipCode" required placeholder="560001">
+                    </div>
+                </div>
+                
+                <div class="checkout-section">
+                    <h3>Order Summary</h3>
+                    <div id="checkout-items"></div>
+                    <div class="order-total">
+                        <strong>Total: ₹<span id="checkout-total">0.00</span></strong>
+                    </div>
+                </div>
+                
+                <div class="checkout-actions">
+                    <button type="button" id="back-to-cart" class="btn btn-secondary">Back to Cart</button>
+                    <button type="submit" id="place-order" class="btn btn-primary">Place Order</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
