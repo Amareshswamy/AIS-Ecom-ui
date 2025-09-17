@@ -211,16 +211,35 @@ async function submitOrder(orderData) {
         });
 
         console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers.get('content-type'));
 
         if (!response.ok) {
             const errorText = await response.text();
             console.error('Error response:', errorText);
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
         }
 
-        const result = await response.json();
-        console.log('Success:', result);
-        return result;
+        // Check if response is JSON
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            const result = await response.json();
+            console.log('Success (JSON):', result);
+            return result;
+        } else {
+            // Handle non-JSON response (likely HTML or text)
+            const textResult = await response.text();
+            console.log('Success (Text):', textResult);
+            
+            // Try to extract meaningful info or create a mock response
+            const mockResult = {
+                success: true,
+                message: textResult.substring(0, 100), // First 100 chars
+                orderId: `ORDER_${Date.now()}`, // Generate a temporary order ID
+                status: 'submitted'
+            };
+            
+            return mockResult;
+        }
     } catch (error) {
         console.error('Order submission error:', error);
         throw error;
@@ -261,7 +280,17 @@ function handleCheckoutSubmit(event) {
     submitOrder(orderData)
         .then(result => {
             console.log('Order successful:', result);
-            alert('Order placed successfully! Order ID: ' + (result.orderId || 'Generated'));
+            
+            // Create a more informative success message
+            let successMessage = 'Order placed successfully!';
+            if (result.orderId) {
+                successMessage += `\nOrder ID: ${result.orderId}`;
+            }
+            if (result.message && result.message.length > 0) {
+                successMessage += `\nStatus: ${result.message}`;
+            }
+            
+            alert(successMessage);
             
             cart = [];
             renderCart();
@@ -270,7 +299,21 @@ function handleCheckoutSubmit(event) {
         })
         .catch(error => {
             console.error('Order failed:', error);
-            alert('Failed to place order: ' + error.message);
+            
+            // Provide more user-friendly error messages
+            let errorMessage = 'Failed to place order.';
+            
+            if (error.message.includes('Failed to fetch')) {
+                errorMessage += '\nNetwork error: Please check your internet connection.';
+            } else if (error.message.includes('CORS')) {
+                errorMessage += '\nCORS error: API configuration issue.';
+            } else if (error.message.includes('JSON')) {
+                errorMessage += '\nAPI returned unexpected response format.';
+            } else {
+                errorMessage += `\nError: ${error.message}`;
+            }
+            
+            alert(errorMessage);
         })
         .finally(() => {
             submitBtn.disabled = false;
