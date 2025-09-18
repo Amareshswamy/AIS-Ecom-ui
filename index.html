@@ -10,9 +10,15 @@
 <body>
     <nav class="navbar">
         <div class="nav-brand">ShopMart</div>
-        <div class="nav-cart">
-            <i class="fas fa-shopping-cart"></i>
-            <span id="cart-count">0</span>
+        <div class="nav-actions">
+            <button id="my-orders-btn" class="btn btn-outline">
+                <i class="fas fa-receipt"></i>
+                My Orders
+            </button>
+            <div class="nav-cart">
+                <i class="fas fa-shopping-cart"></i>
+                <span id="cart-count">0</span>
+            </div>
         </div>
     </nav>
 
@@ -113,7 +119,121 @@
             </div>
             
             <div class="confirmation-actions">
+                <button id="view-order-details" class="btn btn-secondary">View Order Details</button>
                 <button id="continue-shopping" class="btn btn-primary">Continue Shopping</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Details Modal -->
+    <div id="order-details-modal" class="modal">
+        <div class="modal-content order-details">
+            <div class="modal-header">
+                <h2>Order Details</h2>
+                <span class="close" id="order-details-close">&times;</span>
+            </div>
+            
+            <div class="order-info">
+                <div class="order-section">
+                    <h3><i class="fas fa-receipt"></i> Order Information</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <strong>Order Date:</strong>
+                            <span id="order-date"></span>
+                        </div>
+                        <div class="info-item">
+                            <strong>Order Time:</strong>
+                            <span id="order-time"></span>
+                        </div>
+                        <div class="info-item">
+                            <strong>Total Amount:</strong>
+                            <span id="details-total" class="amount">₹0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="order-section">
+                    <h3><i class="fas fa-shipping-fast"></i> Shipping Address</h3>
+                    <div class="address-details" id="shipping-address">
+                        <!-- Address will be populated here -->
+                    </div>
+                </div>
+
+                <div class="order-section">
+                    <h3><i class="fas fa-box"></i> Items Ordered</h3>
+                    <div id="ordered-items" class="ordered-items">
+                        <!-- Items will be populated here -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="order-details-actions">
+                <button id="back-to-confirmation" class="btn btn-secondary">Back</button>
+                <button id="print-order" class="btn btn-primary">Print Order</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Lookup Modal -->
+    <div id="order-history-modal" class="modal">
+        <div class="modal-content order-lookup">
+            <div class="modal-header">
+                <h2><i class="fas fa-search"></i> Order Lookup</h2>
+                <span class="close" id="order-history-close">&times;</span>
+            </div>
+            
+            <div class="order-lookup-content">
+                <div class="search-section">
+                    <h3>Search Order by ID</h3>
+                    <p class="search-description">Enter your Order ID to view order details and status</p>
+                    
+                    <div class="search-form">
+                        <div class="search-input-group">
+                            <input 
+                                type="text" 
+                                id="order-id-input" 
+                                placeholder="Enter Order ID (e.g., ORD123456)" 
+                                class="order-search-input"
+                            />
+                            <button id="search-order-btn" class="btn btn-primary search-btn">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="order-search-results" class="order-search-results" style="display: none;">
+                    <!-- Search results will be displayed here -->
+                </div>
+
+                <div id="order-search-loading" class="search-loading" style="display: none;">
+                    <div class="loading-spinner">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Searching for your order...</p>
+                    </div>
+                </div>
+
+                <div id="order-not-found" class="order-not-found" style="display: none;">
+                    <div class="not-found-state">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>Order Not Found</h3>
+                        <p>We couldn't find an order with that ID. Please check your Order ID and try again.</p>
+                        <button id="try-again-btn" class="btn btn-secondary">Try Again</button>
+                    </div>
+                </div>
+
+                <div class="recent-orders-section">
+                    <h3>Recent Orders</h3>
+                    <div id="recent-orders-list" class="recent-orders-list">
+                        <!-- Recent orders will be populated here -->
+                    </div>
+                    <div id="no-recent-orders" class="no-orders-message">
+                        <div class="empty-state">
+                            <i class="fas fa-shopping-bag"></i>
+                            <p>No recent orders found. Place an order to see it here!</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

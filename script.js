@@ -11,6 +11,8 @@ console.log('🚀 ShopMart Clean v2.0 - Direct APIM calls only');
 // Global state
 let products = [];
 let cart = [];
+let currentOrder = null;
+let orderHistory = JSON.parse(localStorage.getItem('orderHistory')) || [];
 
 // DOM elements
 const productsGrid = document.getElementById('products-grid');
@@ -20,12 +22,23 @@ const cartTotal = document.getElementById('cart-total');
 const cartModal = document.getElementById('cart-modal');
 const checkoutModal = document.getElementById('checkout-modal');
 const orderConfirmationModal = document.getElementById('order-confirmation-modal');
+const orderDetailsModal = document.getElementById('order-details-modal');
+const orderHistoryModal = document.getElementById('order-history-modal');
 const closeButton = document.querySelector('.close');
 const checkoutCloseButton = document.getElementById('checkout-close');
+const orderDetailsCloseButton = document.getElementById('order-details-close');
+const orderHistoryCloseButton = document.getElementById('order-history-close');
 const navCart = document.querySelector('.nav-cart');
+const myOrdersBtn = document.getElementById('my-orders-btn');
+const orderIdInput = document.getElementById('order-id-input');
+const searchOrderBtn = document.getElementById('search-order-btn');
+const tryAgainBtn = document.getElementById('try-again-btn');
 const checkoutBtn = document.getElementById('checkout-btn');
 const backToCartBtn = document.getElementById('back-to-cart');
 const continueShoppingBtn = document.getElementById('continue-shopping');
+const viewOrderDetailsBtn = document.getElementById('view-order-details');
+const backToConfirmationBtn = document.getElementById('back-to-confirmation');
+const printOrderBtn = document.getElementById('print-order');
 const checkoutForm = document.getElementById('checkout-form');
 const checkoutItems = document.getElementById('checkout-items');
 const checkoutTotal = document.getElementById('checkout-total');
@@ -200,6 +213,20 @@ function backToCart() {
 
 // Order confirmation functions
 function showOrderConfirmation(orderData, orderResult) {
+    // Store current order details
+    currentOrder = {
+        id: Date.now(), // Simple ID generation
+        orderData: orderData,
+        orderResult: orderResult,
+        orderDate: new Date().toLocaleDateString('en-IN'),
+        orderTime: new Date().toLocaleTimeString('en-IN'),
+        items: [...cart] // Copy of cart items
+    };
+    
+    // Save to order history
+    orderHistory.unshift(currentOrder); // Add to beginning of array
+    localStorage.setItem('orderHistory', JSON.stringify(orderHistory));
+    
     // Populate confirmation items
     confirmationItems.innerHTML = cart.map(item => `
         <div class="confirmation-item">
@@ -219,6 +246,358 @@ function showOrderConfirmation(orderData, orderResult) {
 
 function closeOrderConfirmation() {
     orderConfirmationModal.style.display = 'none';
+}
+
+// Order details functions
+function showOrderDetails() {
+    if (!currentOrder) return;
+    
+    // Populate order information
+    document.getElementById('order-date').textContent = currentOrder.orderDate;
+    document.getElementById('order-time').textContent = currentOrder.orderTime;
+    document.getElementById('details-total').textContent = '₹' + currentOrder.orderData.totalAmount.toLocaleString('en-IN');
+    
+    // Populate shipping address
+    const address = currentOrder.orderData.shippingAddress;
+    document.getElementById('shipping-address').innerHTML = `
+        <div class="address-line">${address.street}</div>
+        <div class="address-line">${address.city}, ${address.state}</div>
+        <div class="address-line">PIN: ${address.zipCode}</div>
+    `;
+    
+    // Populate ordered items
+    document.getElementById('ordered-items').innerHTML = currentOrder.items.map(item => `
+        <div class="ordered-item">
+            <div class="item-info">
+                <div class="item-name">${item.productName}</div>
+                <div class="item-details">Quantity: ${item.quantity} × ₹${item.unitPrice.toLocaleString('en-IN')}</div>
+            </div>
+            <div class="item-price">₹${(item.unitPrice * item.quantity).toLocaleString('en-IN')}</div>
+        </div>
+    `).join('');
+    
+    // Show order details modal
+    orderConfirmationModal.style.display = 'none';
+    orderDetailsModal.style.display = 'block';
+}
+
+function closeOrderDetails() {
+    orderDetailsModal.style.display = 'none';
+}
+
+function backToConfirmation() {
+    orderDetailsModal.style.display = 'none';
+    orderConfirmationModal.style.display = 'block';
+}
+
+function printOrder() {
+    if (!currentOrder) return;
+    
+    // Create a printable version of the order
+    const printContent = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <h1 style="color: #007bff;">ShopMart</h1>
+                <h2>Order Receipt</h2>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <h3>Order Information</h3>
+                <p><strong>Date:</strong> ${currentOrder.orderDate}</p>
+                <p><strong>Time:</strong> ${currentOrder.orderTime}</p>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <h3>Shipping Address</h3>
+                <p>${currentOrder.orderData.shippingAddress.street}</p>
+                <p>${currentOrder.orderData.shippingAddress.city}, ${currentOrder.orderData.shippingAddress.state}</p>
+                <p>PIN: ${currentOrder.orderData.shippingAddress.zipCode}</p>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <h3>Items Ordered</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid #007bff;">
+                            <th style="text-align: left; padding: 10px;">Product</th>
+                            <th style="text-align: center; padding: 10px;">Qty</th>
+                            <th style="text-align: right; padding: 10px;">Price</th>
+                            <th style="text-align: right; padding: 10px;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${currentOrder.items.map(item => `
+                            <tr style="border-bottom: 1px solid #eee;">
+                                <td style="padding: 10px;">${item.productName}</td>
+                                <td style="text-align: center; padding: 10px;">${item.quantity}</td>
+                                <td style="text-align: right; padding: 10px;">₹${item.unitPrice.toLocaleString('en-IN')}</td>
+                                <td style="text-align: right; padding: 10px;">₹${(item.unitPrice * item.quantity).toLocaleString('en-IN')}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                    <tfoot>
+                        <tr style="border-top: 2px solid #007bff;">
+                            <td colspan="3" style="text-align: right; padding: 15px; font-weight: bold;">Total Amount:</td>
+                            <td style="text-align: right; padding: 15px; font-weight: bold; color: #007bff;">₹${currentOrder.orderData.totalAmount.toLocaleString('en-IN')}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px; color: #6c757d;">
+                <p>Thank you for shopping with ShopMart!</p>
+            </div>
+        </div>
+    `;
+    
+    // Open print window
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Order Receipt - ShopMart</title>
+            <style>
+                @media print {
+                    body { margin: 0; }
+                }
+            </style>
+        </head>
+        <body>
+            ${printContent}
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+}
+
+// Order history functions
+// Order search and lookup functions
+function showOrderLookup() {
+    // Show recent orders
+    displayRecentOrders();
+    
+    // Reset search form
+    orderIdInput.value = '';
+    hideAllSearchStates();
+    
+    // Show the modal
+    orderHistoryModal.style.display = 'block';
+}
+
+function hideAllSearchStates() {
+    document.getElementById('order-search-results').style.display = 'none';
+    document.getElementById('order-search-loading').style.display = 'none';
+    document.getElementById('order-not-found').style.display = 'none';
+}
+
+function displayRecentOrders() {
+    const recentOrdersList = document.getElementById('recent-orders-list');
+    const noRecentOrders = document.getElementById('no-recent-orders');
+    
+    if (orderHistory.length === 0) {
+        recentOrdersList.style.display = 'none';
+        noRecentOrders.style.display = 'block';
+    } else {
+        recentOrdersList.style.display = 'block';
+        noRecentOrders.style.display = 'none';
+        
+        // Show only last 3 orders
+        const recentOrders = orderHistory.slice(-3).reverse();
+        
+        recentOrdersList.innerHTML = recentOrders.map(order => {
+            const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
+            const itemsSummary = order.items.length === 1 
+                ? `${order.items[0].productName}` 
+                : `${order.items[0].productName} +${order.items.length - 1} more`;
+            
+            return `
+                <div class="order-history-item" data-order-id="${order.id}">
+                    <div class="order-header">
+                        <div class="order-info-header">
+                            <div class="order-date">${order.orderDate}</div>
+                            <div class="order-time">${order.orderTime}</div>
+                        </div>
+                        <div class="order-total-header">
+                            <div class="order-amount">₹${order.orderData.totalAmount.toLocaleString('en-IN')}</div>
+                            <div class="order-status">Completed</div>
+                        </div>
+                    </div>
+                    <div class="order-items-summary">
+                        ${itemCount} item${itemCount > 1 ? 's' : ''}: ${itemsSummary}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+}
+
+async function searchOrderById(orderId) {
+    if (!orderId.trim()) {
+        alert('Please enter an Order ID');
+        return;
+    }
+    
+    // Show loading state
+    hideAllSearchStates();
+    document.getElementById('order-search-loading').style.display = 'block';
+    searchOrderBtn.disabled = true;
+    searchOrderBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
+    
+    try {
+        // First check local storage
+        const localOrder = orderHistory.find(order => 
+            order.id.toLowerCase().includes(orderId.toLowerCase())
+        );
+        
+        if (localOrder) {
+            displaySearchResult(localOrder);
+            return;
+        }
+        
+        // If not found locally, try to fetch from API
+        // Note: You'll need to implement an order lookup endpoint in your backend
+        const response = await fetch(`${GET_PRODUCTS_URL.replace('/products', '/orders/' + orderId)}`, {
+            headers: {
+                'Ocp-Apim-Subscription-Key': APIM_SUBSCRIPTION_KEY
+            }
+        });
+        
+        if (response.ok) {
+            const orderData = await response.json();
+            displaySearchResult(orderData);
+        } else if (response.status === 404) {
+            showOrderNotFound();
+        } else {
+            throw new Error(`Failed to fetch order: ${response.status}`);
+        }
+        
+    } catch (error) {
+        console.error('Order search error:', error);
+        
+        // Check if order exists in local storage with partial match
+        const partialMatch = orderHistory.find(order => 
+            order.id.toLowerCase().includes(orderId.toLowerCase()) ||
+            orderId.toLowerCase().includes(order.id.toLowerCase())
+        );
+        
+        if (partialMatch) {
+            displaySearchResult(partialMatch);
+        } else {
+            showOrderNotFound();
+        }
+    } finally {
+        // Reset button state
+        searchOrderBtn.disabled = false;
+        searchOrderBtn.innerHTML = '<i class="fas fa-search"></i> Search';
+    }
+}
+
+function displaySearchResult(orderData) {
+    hideAllSearchStates();
+    const resultsDiv = document.getElementById('order-search-results');
+    
+    const itemCount = orderData.items.reduce((sum, item) => sum + item.quantity, 0);
+    
+    resultsDiv.innerHTML = `
+        <div class="search-result-header">
+            <h3><i class="fas fa-check-circle" style="color: #28a745;"></i> Order Found</h3>
+            <p>Order ID: <strong>${orderData.id}</strong></p>
+        </div>
+        
+        <div class="order-summary-card">
+            <div class="order-header">
+                <div class="order-info-header">
+                    <div class="order-date">${orderData.orderDate}</div>
+                    <div class="order-time">${orderData.orderTime}</div>
+                </div>
+                <div class="order-total-header">
+                    <div class="order-amount">₹${orderData.orderData.totalAmount.toLocaleString('en-IN')}</div>
+                    <div class="order-status">Completed</div>
+                </div>
+            </div>
+            
+            <div class="order-items-preview">
+                <h4>Items (${itemCount}):</h4>
+                ${orderData.items.map(item => `
+                    <div class="item-preview">
+                        <span>${item.productName}</span>
+                        <span>Qty: ${item.quantity} × ₹${item.unitPrice.toLocaleString('en-IN')}</span>
+                    </div>
+                `).join('')}
+            </div>
+            
+            <div class="shipping-info">
+                <h4>Shipping Address:</h4>
+                <p>${orderData.orderData.shippingAddress.street}</p>
+                <p>${orderData.orderData.shippingAddress.city}, ${orderData.orderData.shippingAddress.state} ${orderData.orderData.shippingAddress.zipCode}</p>
+            </div>
+            
+            <div class="order-actions">
+                <button class="btn btn-primary" onclick="viewOrderDetails('${orderData.id}')">
+                    <i class="fas fa-eye"></i> View Full Details
+                </button>
+                <button class="btn btn-secondary" onclick="printOrderById('${orderData.id}')">
+                    <i class="fas fa-print"></i> Print
+                </button>
+            </div>
+        </div>
+    `;
+    
+    resultsDiv.style.display = 'block';
+}
+
+function showOrderNotFound() {
+    hideAllSearchStates();
+    document.getElementById('order-not-found').style.display = 'block';
+}
+
+function viewOrderDetails(orderId) {
+    const order = orderHistory.find(o => o.id === orderId);
+    if (order) {
+        currentOrder = order;
+        showOrderDetails();
+    }
+}
+
+function printOrderById(orderId) {
+    const order = orderHistory.find(o => o.id === orderId);
+    if (order) {
+        currentOrder = order;
+        printOrder();
+    }
+}
+
+function resetSearch() {
+    orderIdInput.value = '';
+    hideAllSearchStates();
+    orderIdInput.focus();
+}
+
+function closeOrderHistory() {
+    orderHistoryModal.style.display = 'none';
+}
+
+function viewOrderFromHistory(orderId) {
+    const order = orderHistory.find(o => o.id == orderId);
+    if (!order) return;
+    
+    // Set as current order and show details
+    currentOrder = order;
+    closeOrderHistory();
+    showOrderDetails();
+}
+
+function printOrderFromHistory(orderId) {
+    const order = orderHistory.find(o => o.id == orderId);
+    if (!order) return;
+    
+    // Temporarily set as current order for printing
+    const originalOrder = currentOrder;
+    currentOrder = order;
+    printOrder();
+    currentOrder = originalOrder;
 }
 
 // Submit order - DIRECT APIM CALL ONLY
@@ -366,7 +745,37 @@ checkoutBtn.addEventListener('click', openCheckoutModal);
 checkoutCloseButton.addEventListener('click', closeCheckoutModal);
 backToCartBtn.addEventListener('click', backToCart);
 continueShoppingBtn.addEventListener('click', closeOrderConfirmation);
+viewOrderDetailsBtn.addEventListener('click', showOrderDetails);
+orderDetailsCloseButton.addEventListener('click', closeOrderDetails);
+backToConfirmationBtn.addEventListener('click', backToConfirmation);
+printOrderBtn.addEventListener('click', printOrder);
+myOrdersBtn.addEventListener('click', showOrderLookup);
+searchOrderBtn.addEventListener('click', () => {
+    const orderId = orderIdInput.value.trim();
+    searchOrderById(orderId);
+});
+orderIdInput.addEventListener('keypress', (event) => {
+    if (event.key === 'Enter') {
+        const orderId = orderIdInput.value.trim();
+        searchOrderById(orderId);
+    }
+});
+tryAgainBtn.addEventListener('click', resetSearch);
+orderHistoryCloseButton.addEventListener('click', closeOrderHistory);
+startShoppingBtn.addEventListener('click', closeOrderHistory);
 checkoutForm.addEventListener('submit', handleCheckoutSubmit);
+
+// Event delegation for order history actions
+document.addEventListener('click', (event) => {
+    if (event.target.classList.contains('view-details-btn')) {
+        const orderId = event.target.dataset.orderId;
+        viewOrderFromHistory(orderId);
+    }
+    if (event.target.classList.contains('print-receipt-btn')) {
+        const orderId = event.target.dataset.orderId;
+        printOrderFromHistory(orderId);
+    }
+});
 
 window.addEventListener('click', (event) => {
     if (event.target == cartModal) {
@@ -377,6 +786,12 @@ window.addEventListener('click', (event) => {
     }
     if (event.target == orderConfirmationModal) {
         orderConfirmationModal.style.display = 'none';
+    }
+    if (event.target == orderDetailsModal) {
+        orderDetailsModal.style.display = 'none';
+    }
+    if (event.target == orderHistoryModal) {
+        orderHistoryModal.style.display = 'none';
     }
 });
 
