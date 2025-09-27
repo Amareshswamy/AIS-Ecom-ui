@@ -27,7 +27,6 @@ const orderHistoryModal = document.getElementById('order-history-modal');
 const closeButton = document.querySelector('.close');
 const checkoutCloseButton = document.getElementById('checkout-close');
 const orderDetailsCloseButton = document.getElementById('order-details-close');
-const orderHistoryCloseButton = document.getElementById('order-history-close');
 const navCart = document.querySelector('.nav-cart');
 const myOrdersBtn = document.getElementById('my-orders-btn');
 const orderIdInput = document.getElementById('order-id-input');
@@ -761,8 +760,6 @@ orderIdInput.addEventListener('keypress', (event) => {
     }
 });
 tryAgainBtn.addEventListener('click', resetSearch);
-orderHistoryCloseButton.addEventListener('click', closeOrderHistory);
-startShoppingBtn.addEventListener('click', closeOrderHistory);
 checkoutForm.addEventListener('submit', handleCheckoutSubmit);
 
 // Event delegation for order history actions
@@ -791,7 +788,7 @@ window.addEventListener('click', (event) => {
         orderDetailsModal.style.display = 'none';
     }
     if (event.target == orderHistoryModal) {
-        orderHistoryModal.style.display = 'none';
+        closeOrderHistory();
     }
 });
 
