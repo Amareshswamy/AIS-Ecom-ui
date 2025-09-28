@@ -446,9 +446,11 @@ async function searchOrderById(orderId) {
     
     try {
         // First check local storage
-        const localOrder = orderHistory.find(order => 
-            order.id.toLowerCase().includes(orderId.toLowerCase())
-        );
+        const localOrder = orderHistory.find(order => {
+            const orderIdStr = String(order.id || '').toLowerCase();
+            const searchStr = String(orderId || '').toLowerCase();
+            return orderIdStr.includes(searchStr);
+        });
         
         if (localOrder) {
             displaySearchResult(localOrder);
@@ -476,10 +478,11 @@ async function searchOrderById(orderId) {
         console.error('Order search error:', error);
         
         // Check if order exists in local storage with partial match
-        const partialMatch = orderHistory.find(order => 
-            order.id.toLowerCase().includes(orderId.toLowerCase()) ||
-            orderId.toLowerCase().includes(order.id.toLowerCase())
-        );
+        const partialMatch = orderHistory.find(order => {
+            const orderIdStr = String(order.id || '').toLowerCase();
+            const searchStr = String(orderId || '').toLowerCase();
+            return orderIdStr.includes(searchStr) || searchStr.includes(orderIdStr);
+        });
         
         if (partialMatch) {
             displaySearchResult(partialMatch);
